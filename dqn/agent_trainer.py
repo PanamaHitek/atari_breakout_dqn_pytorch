@@ -14,12 +14,12 @@ from atari_wrappers import wrap_deepmind, make_atari
 import dqn as dqn
 import os
 
-pretrained_policy_path = "trained_policies/training_policy_network.pt"
+pretrained_policy_path = "trained_policies/new_policy_network.pt"
 new_policy_path="trained_policies/new_policy_network.pt"
 
 batch_size = 32                          # Number of experiences to sample from the replay buffer for each training iteration
 gamma = 0.99                             # Discount factor used in the Q-learning update equation
-initial_epsilon = 0.05                   # Initial value of the exploration rate for epsilon-greedy action selection strategy
+initial_epsilon = 1.00                   # Initial value of the exploration rate for epsilon-greedy action selection strategy
 final_epsilon = 0.05                     # Final value of the exploration rate for epsilon-greedy action selection strategy
 epsilon_decay = 200000                   # Number of steps over which to decay the exploration rate from initial to final value
 optimizer_epsilon = 1.5e-4               # Learning rate for the optimizer used to update the policy network
@@ -27,8 +27,8 @@ adam_learning_rate = 0.0000625           # Learning rate for the Adam optimizer 
 target_network_update = 25000            # Frequency (in steps) at which to update the target network
 episodes = 10000000                      # Total number of episodes to train for
 memory_size = 100000                     # Maximum size of the replay buffer
-policy_network_update = 4                # Frequency (in steps) at which to update the policy network
-policy_saving_frequency = 4              # Frequency (in episodes) at which to save the policy network
+policy_network_update = 10               # Frequency (in steps) at which to update the policy network
+policy_saving_frequency = 20000          # Frequency (in episodes) at which to save the policy network
 num_eval_episode = 15                    # Number of episodes to evaluate the policy network on during evaluation
 random_exploration_interval = 1000000    # Number of steps during which to perform random exploration before using the policy network
 evaluation_frequency = 25000             # Frequency (in steps) at which to evaluate the policy network
@@ -43,8 +43,8 @@ def evaluate(step, policy_net, device, env, n_actions, train):
     env = wrap_deepmind(env)
 
     # Initialize an action selector using hyperparameters and the input policy network
-    action_selector = dqn.ActionSelector(initial_epsilon, final_epsilon, epsilon_decay, random_exploration_interval,
-                                         policy_net, n_actions, device,for_evaluation=False)
+    action_selector = dqn.ActionSelector(initial_eps =initial_epsilon, final_eps =final_epsilon, eps_decay =epsilon_decay, random_exp =random_exploration_interval,
+                                         policy_net =policy_net, n_actions =n_actions, dev =device,for_evaluation=False)
 
     # Initialize an empty list to store the total rewards obtained in each episode
     total_rewards = []
@@ -90,19 +90,20 @@ def evaluate(step, policy_net, device, env, n_actions, train):
     output_file.close()
 
 
-# This function takes in a PyTorch model as input
-def load_pretrained_model(model):
+def load_pretrained_model(model, device):
     # Check if a pre-trained model exists at the specified path
     if os.path.isfile(pretrained_policy_path):
         # If a pre-trained model exists, load its state dictionary into the input model
+        # and ensure it's loaded onto the correct device
         print("Loading pre-trained model from", pretrained_policy_path)
-        model.load_state_dict(torch.load(pretrained_policy_path))
+        model.load_state_dict(torch.load(pretrained_policy_path, map_location=device))
     else:
         # If a pre-trained model does not exist, initialize the input model's weights from scratch
         print("Pre-trained model not found. Training from scratch.")
         model.apply(model.init_weights)
     # Return the input model (either loaded with a pre-trained model or initialized from scratch)
     return model
+
 
 
 # This function optimizes a PyTorch neural network model using a batch of experiences
@@ -155,7 +156,7 @@ def main():
     target_network = dqn.DQN(possible_actions, device).to(device)
 
     # Load the pre-trained policy network, and synchronize the target network with it
-    policy_network=load_pretrained_model(policy_network)
+    policy_network=load_pretrained_model(policy_network,device)
     target_network.load_state_dict(policy_network.state_dict())
     target_network.eval()
 
