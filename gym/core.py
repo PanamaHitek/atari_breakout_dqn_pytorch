@@ -415,8 +415,8 @@ class RewardWrapper(Wrapper):
 
     def step(self, action):
         """Modifies the reward using :meth:`self.reward` after the environment :meth:`env.step`."""
-        observation, reward, terminated, truncated, info = self.env.step(action)
-        return observation, self.reward(reward), terminated, truncated, info
+        observation, reward, terminated, info = self.env.step(action)
+        return observation, self.reward(reward), terminated,  info
 
     def reward(self, reward):
         """Returns a modified ``reward``."""

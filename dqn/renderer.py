@@ -26,7 +26,7 @@ def evaluate(policy_net, device, environment, n_actions, num_episode):
     # wrap the environment with DeepMind wrappers to preprocess the inputs
     environment = wrap_deepmind(environment)
     # create an action selector object to choose actions according to the policy network's output
-    action_selector = dqn.ActionSelector(0.05, policy_net, n_actions, device)
+    action_selector = dqn.ActionSelector(initial_eps=0.05, policy_net=policy_net, n_actions=n_actions, dev=device,for_evaluation=True)
     # initialize an empty list to store the rewards obtained in each episode
     episodes_rewards = []
     # create a deque object to store the last 5 frames of the game as input to the policy network

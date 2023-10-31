@@ -48,22 +48,31 @@ class DQN(nn.Module):
 
 # Define the epsilon-greedy action selection strategy
 class ActionSelector(object):
-    def __init__(self, initial_eps, final_eps, eps_decay,random_exp, policy_net, n_actions, dev):
+    def __init__(self,
+                 initial_eps=None,
+                 final_eps=None,
+                 eps_decay=None,
+                 random_exp=None,
+                 policy_net=None,
+                 n_actions=None,
+                 dev=None,
+                 for_evaluation=False):
+
+        # If for_evaluation flag is True, then initialize for evaluation.
+        if for_evaluation:
+            self.eps = initial_eps
+            self.policy_network = policy_net
+            self.possible_actions = n_actions
+            self.device = dev
+            return
+
+        # Otherwise, initialize normally.
         self.eps = initial_eps
         self.final_epsilon = final_eps
         self.initial_epsilon = initial_eps
         self.random_exploration_interval = random_exp
         self.policy_network = policy_net
         self.epsilon_decay = eps_decay
-        self.possible_actions = n_actions
-        self.device = dev
-
-    '''
-    Constructor used for evaluation
-    '''
-    def __init__(self, eps,  policy_net, n_actions, dev):
-        self.eps = eps
-        self.policy_network = policy_net
         self.possible_actions = n_actions
         self.device = dev
 

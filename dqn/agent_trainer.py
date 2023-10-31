@@ -14,27 +14,27 @@ from atari_wrappers import wrap_deepmind, make_atari
 import dqn as dqn
 import os
 
-pretrained_policy_path = "trained_policies/trained_policy_network.pt"
+pretrained_policy_path = "trained_policies/training_policy_network.pt"
 new_policy_path="trained_policies/new_policy_network.pt"
 
 batch_size = 32                          # Number of experiences to sample from the replay buffer for each training iteration
 gamma = 0.99                             # Discount factor used in the Q-learning update equation
 initial_epsilon = 0.05                   # Initial value of the exploration rate for epsilon-greedy action selection strategy
 final_epsilon = 0.05                     # Final value of the exploration rate for epsilon-greedy action selection strategy
-epsilon_decay = 20000                    # Number of steps over which to decay the exploration rate from initial to final value
+epsilon_decay = 200000                   # Number of steps over which to decay the exploration rate from initial to final value
 optimizer_epsilon = 1.5e-4               # Learning rate for the optimizer used to update the policy network
 adam_learning_rate = 0.0000625           # Learning rate for the Adam optimizer used to update the target network
-target_network_update = 10000            # Frequency (in steps) at which to update the target network
-episodes = 1000000                       # Total number of episodes to train for
-memory_size = 1000000                    # Maximum size of the replay buffer
+target_network_update = 25000            # Frequency (in steps) at which to update the target network
+episodes = 10000000                      # Total number of episodes to train for
+memory_size = 100000                     # Maximum size of the replay buffer
 policy_network_update = 4                # Frequency (in steps) at which to update the policy network
 policy_saving_frequency = 4              # Frequency (in episodes) at which to save the policy network
 num_eval_episode = 15                    # Number of episodes to evaluate the policy network on during evaluation
-random_exploration_interval = 10000      # Number of steps during which to perform random exploration before using the policy network
+random_exploration_interval = 1000000    # Number of steps during which to perform random exploration before using the policy network
 evaluation_frequency = 25000             # Frequency (in steps) at which to evaluate the policy network
-max_episode_steps = 400000               # Maximum number of steps to take in each episode
+max_episode_steps = 500000               # Maximum number of steps to take in each episode
 frame_stack_size = 5                     # Number of frames to stack together to form an input to the neural network
-previous_experience = 100000             # Number of experiences to collect in the replay buffer before starting training
+previous_experience = 0                  # Number of experiences to collect in the replay buffer before starting training
 
 
 # This function evaluates a PyTorch neural network model on a wrapped OpenAI gym environment
@@ -44,7 +44,7 @@ def evaluate(step, policy_net, device, env, n_actions, train):
 
     # Initialize an action selector using hyperparameters and the input policy network
     action_selector = dqn.ActionSelector(initial_epsilon, final_epsilon, epsilon_decay, random_exploration_interval,
-                                         policy_net, n_actions, device)
+                                         policy_net, n_actions, device,for_evaluation=False)
 
     # Initialize an empty list to store the total rewards obtained in each episode
     total_rewards = []
@@ -166,7 +166,7 @@ def main():
     memory = dqn.ReplayMemory(memory_size, [frame_stack_size, height, width], device)
 
     # Initialize the action selector
-    action_selector = dqn.ActionSelector(initial_epsilon, final_epsilon, epsilon_decay, random_exploration_interval, policy_network, possible_actions, device)
+    action_selector = dqn.ActionSelector(initial_epsilon, final_epsilon, epsilon_decay, random_exploration_interval, policy_network, possible_actions, device,for_evaluation=False)
 
     # Initialize the frame stack and episode length
     frame_stack = deque(maxlen=frame_stack_size)
