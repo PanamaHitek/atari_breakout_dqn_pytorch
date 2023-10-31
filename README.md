@@ -5,3 +5,5 @@ This code has been developed for this post: https://panamahitek.com/reinforcemen
 Requierements:
 - Python 3.10
 - pip install autorom[accept-rom-license]
+- pip install opencv-python
+- pip install gym[accept-rom-license]==0.21.0
